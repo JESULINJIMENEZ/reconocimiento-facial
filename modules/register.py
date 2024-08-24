@@ -1,7 +1,7 @@
 import cv2
 import face_recognition
 import json
-from database import load_encodings, save_encodings
+from modules.database import load_encodings, save_encodings
 
 def register_user(name):
     # Iniciar la captura de video desde la cámara

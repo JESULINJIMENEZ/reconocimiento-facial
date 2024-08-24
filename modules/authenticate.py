@@ -1,11 +1,11 @@
 import cv2
 import dlib
 import numpy as np
-from database import load_encodings
+from modules.database import load_encodings
 
 # Cargar los modelos de dlib
-predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
-face_rec = dlib.face_recognition_model_v1('dlib_face_recognition_resnet_model_v1.dat')
+predictor = dlib.shape_predictor('data/shape_predictor_68_face_landmarks.dat')
+face_rec = dlib.face_recognition_model_v1('data/dlib_face_recognition_resnet_model_v1.dat')
 
 def authenticate_user():
     # Cargar las codificaciones conocidas

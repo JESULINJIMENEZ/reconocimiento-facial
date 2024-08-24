@@ -1,7 +1,7 @@
 import json
 import os
 
-def load_encodings(file_path='encodings.json'):
+def load_encodings(file_path='data/encodings.json'):
     # Verifica si el archivo existe y no está vacío
     if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
         # Si el archivo no existe o está vacío, devuelve un diccionario vacío
@@ -17,6 +17,6 @@ def load_encodings(file_path='encodings.json'):
     
     return encodings
 
-def save_encodings(encodings, file_path='encodings.json'):
+def save_encodings(encodings, file_path='data/encodings.json'):
     with open(file_path, 'w') as f:
         json.dump(encodings, f)
