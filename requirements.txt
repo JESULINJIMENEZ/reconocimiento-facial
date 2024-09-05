@@ -1,2 +1,4 @@
-face_recognition
-opencv-python
+fastapi==0.85.0
+python-dotenv==0.19.2
+dlib==20.7.0.post1
+face-recognition==1.6.3
