@@ -14,7 +14,7 @@ def load_encodings(file_path='encodings.json'):
         # Si ocurre un error al decodificar el JSON, devuelve un diccionario vacío
         print("Error: El archivo de encodings está corrupto. Creando un nuevo archivo.")
         encodings = {}
-    
+
     return encodings
 
 def save_encodings(encodings, file_path='encodings.json'):

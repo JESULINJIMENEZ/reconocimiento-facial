@@ -1,13 +1,29 @@
+
 from register import register_user
 from authenticate import authenticate_user
+from fastapi import FastAPI, HTTPException
+from api.routes.authenticate import authenticate_user
+from api.routes.register import register_user
 
-if __name__ == "__main__":
-    option = input("¿Deseas (r)egistrar un nuevo usuario o (a)utenticar un usuario? [r/a]: ")
-    
-    if option.lower() == 'r':
-        name = input("Introduce el nombre del usuario: ")
+
+app = FastAPI()
+
+@app.post("/register")
+def register(name: str):
+    try:
         register_user(name)
-    elif option.lower() == 'a':
-        authenticate_user()
-    else:
-        print("Opción no válida.")
+        return {"message": f"Usuario {name} registrado exitosamente."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/authenticate")
+def authenticate():
+    try:
+        result = authenticate_user()
+        if result:
+            return {"message": "Autenticación exitosa"}
+        else:
+            return {"message": "Autenticación fallida"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
