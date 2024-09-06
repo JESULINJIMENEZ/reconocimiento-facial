@@ -1,52 +1,49 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile
+import json
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
-from typing import Optional
-import cv2
-import face_recognition
-import numpy as np
-from api.utils.database import load_encodings, save_encodings
 from api.utils.encoding import encode_faces
+from api.utils.database import load_encodings, save_encodings
 
 app = FastAPI()
 
-# Tamaño mínimo y máximo del rostro en píxeles para el registro
-MIN_FACE_SIZE = 100
-MAX_FACE_SIZE = 300
+# Cargar codificaciones existentes o crear el archivo si no existe
+def load_encodings(file_path='data/encodings.json'):
+    try:
+        with open(file_path, 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}  # Si el archivo no existe o está vacío, devolvemos un diccionario vacío
+
+# Guardar las codificaciones en el archivo JSON
+def save_encodings(encodings, file_path='data/encodings.json'):
+    try:
+        print(f"Guardando las codificaciones en {file_path}")  # Depurar la ruta
+        with open(file_path, 'w') as f:
+            json.dump(encodings, f)
+        print("Codificaciones guardadas correctamente")
+    except Exception as e:
+        print(f"Error al guardar las codificaciones: {e}")
 
 @app.post("/register/")
-async def register_user(name: str, frame: UploadFile = File(...)):
-    # Leer la imagen enviada
-    image = cv2.imdecode(np.fromstring(await frame.read(), np.uint8), cv2.IMREAD_COLOR)
-
-    # Convertir la imagen a RGB
-    rgb_frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-    # Detectar rostros en la imagen
-    face_locations = face_recognition.face_locations(rgb_frame)
-
-    if len(face_locations) != 1:
-        return JSONResponse(status_code=400, content={"message": "Asegúrate de que solo un rostro esté visible."})
-
-    top, right, bottom, left = face_locations[0]
-    face_width = right - left
-    face_height = bottom - top
-
-    if not (MIN_FACE_SIZE <= face_width <= MAX_FACE_SIZE and MIN_FACE_SIZE <= face_height <= MAX_FACE_SIZE):
-        return JSONResponse(status_code=400, content={"message": "El rostro no está a la distancia adecuada. Acércate o aléjate."})
-
-    # Codificar el rostro
-    face_encodings = encode_faces(rgb_frame, face_locations)
-
+async def register_user(name: str = Form(...), frame: UploadFile = File(...)):
+    # Verifica si los datos están llegando
+    print(f"Nombre recibido: {name}")
+    print(f"Archivo recibido: {frame.filename}")
+    
+    # Procesar la imagen
+    image_data = await frame.read()
+    face_encodings = encode_faces(image_data)
+    
     if len(face_encodings) != 1:
-        return JSONResponse(status_code=400, content={"message": "No se pudo codificar el rostro."})
+        return JSONResponse(status_code=400, content={"message": "Se detectó más de un rostro o ninguno."})
 
     # Cargar las codificaciones existentes
-    encodings = load_encodings()
-
-    # Agregar la nueva codificación
-    encodings[name] = face_encodings[0].tolist()
+    known_encodings = load_encodings()
+    
+    # Agregar la nueva codificación con el nombre
+    known_encodings[name] = face_encodings[0].tolist()
 
     # Guardar las codificaciones actualizadas
-    save_encodings(encodings)
+    save_encodings(known_encodings)
 
-    return JSONResponse(status_code=200, content={"message": "Registro exitoso"})
+    return JSONResponse(content={"message": f"Usuario {name} registrado exitosamente."})

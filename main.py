@@ -1,23 +1,19 @@
-from fastapi import FastAPI, HTTPException, Depends
 import uvicorn
-
-from api.routes.authenticate import authenticate_user
-from api.routes.register import register_user
-from typing import Optional
+from fastapi import FastAPI, Form, UploadFile, File  # Importar Form, UploadFile, File
+from api.routes.register import register_user  # Importa la función del archivo register.py
 
 app = FastAPI()
 
+# Ruta raíz para verificar que la API está corriendo
 @app.get("/")
 def read_root():
-    return {"message": "Bienvenido a la API"}
+    return {"message": "Bienvenido al sistema de reconocimiento facial"}
 
-@app.post("/auth/token")
-async def authenticate_user(token: Optional[str] = None):
-    await authenticate_user(token)
-
+# Ruta para registrar un nuevo usuario usando la función de register_user
 @app.post("/register/")
-async def register_user(name: str):
-    await register_user(name)
+async def register_user_endpoint(name: str = Form(...), frame: UploadFile = File(...)):
+    return await register_user(name, frame)
 
+# Ejecutar la aplicación usando Uvicorn
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
